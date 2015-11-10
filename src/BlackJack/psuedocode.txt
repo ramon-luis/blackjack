@@ -1,0 +1,102 @@
+PSUEDOCODE
+
+Card class
+members
+suit
+rank
+
+methods
+get suit
+get rank
+toString
+
+
+Shoe class
+holds 6 decks of cards
+can be shuffled
+stores dealer marker
+returns if next card is available
+returns next card
+toString
+
+
+Game class
+Uses shoe of cards
+Store user score
+Store user hand -> list
+Store dealer score
+Store dealer hand -> list
+Store user money -> int
+Store user bet -> int
+
+Deal initial cards to user and dealer
+Create user bet
+Increase user bet
+Deal additional card to user
+Deal additional card to dealer
+Calculate if dealer needs another card
+Check for blackjack
+Check for bust
+Calculate points for hand of card
+Calculate winner between two hands
+Pay user 1.5x bet
+Pay user 1x bet
+Take users bet
+Clear current cards
+Check for valid bet
+
+
+Table class
+Display user hand
+Display dealer hand
+Display user money
+Display min bet
+Display user bet
+
+Buttons for betting (5,10,25,50,100,500)
+Button for deal
+    deal cards
+    check for user bust
+    check for dealer BJ
+    prompt user for next action:
+        hit
+        stay
+        double
+        surrender
+
+Button for hit
+    deal user card
+    check for user bust
+    check for 21
+    re-prompt for next action
+    
+Button for stay
+    loop:
+        deal dealer card 
+        check for dealer bust
+        check for dealer 21
+        check for dealer limit
+    check for winner
+    print winner
+    update user money
+    show continue button
+        
+Button for double
+    double user bet
+    deal user card 
+    check for 21
+    call stay()
+    
+Button for surrender
+    return half user bet
+    clear bets
+    clear hands
+    show bet screen
+
+Button for continue play
+    clear bets
+    clear hands
+    show bet screen
+
+Timer for dealer cards?
+Display relative cards remaining in shoe
