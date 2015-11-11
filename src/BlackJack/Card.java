@@ -8,12 +8,12 @@ package BlackJack;
 public class Card {
 
     //  enum for Suit
-    public static enum Suit {
+    public enum Suit {
         CLUBS('C'), DIAMONDS('D'), HEARTS('H'), SPADES('S');
         private char value;
 
         //  private constructor
-        private Suit(char value) {
+        Suit(char value) {
             this.value = value;
         }
         
@@ -56,7 +56,7 @@ public class Card {
         int iValue = Character.getNumericValue(mFace);
         if (mFace == 'A')
             iValue = 1;
-        else if (!Character.isNumeric(mFace))
+        else if (!Character.isDigit(mFace))
             iValue = 10;
         return iValue;
     }
