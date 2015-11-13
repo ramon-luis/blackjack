@@ -24,6 +24,7 @@ public class Game {
     private ArrayList<Card> mUserCards;  // list of user cards for a specific hand
     private int mUserMoney;  // stored as cents
     private int mUserBet;  // stored as cents
+    private boolean mSurrender;
 
 
     // constructor
@@ -35,6 +36,7 @@ public class Game {
         mDealerCards = new ArrayList<>();  // create empty list to store dealer cards for each hand
         mUserMoney = USER_STARTING_MONEY;  // set starting money for user
         mUserBet = 0;  // user bet starts at 0
+        mSurrender = false;
     }
 
     // get a new shoe of playing cards 
@@ -44,8 +46,12 @@ public class Game {
 
     // check if bet amount is valid -> needs to be more than min bet and less than users available money
     public boolean isValidBet(int amount) {
-        return amount > MIN_BET && amount < mUserMoney;
+        return amount > 0 && amount < mUserMoney;
 
+    }
+
+    public boolean minBetReached() {
+        return mUserBet >= MIN_BET;
     }
 
     // set the initial user bet
@@ -54,19 +60,59 @@ public class Game {
             throw new IllegalArgumentException("invalid amount to bet");
 
         mUserMoney -= amount;  // subtract amount from user's money
-        mUserBet = amount;  // add mount to user's current bet
+        mUserBet += amount;  // add mount to user's current bet
     }
 
+    public void resetUserBet() {
+        mUserMoney += mUserBet;
+        mUserBet = 0;
+    }
 
-//    // deal initial cards
-//    public void dealCards() {
-//        int iInitialCardsPerHand = 2;
-//        if (!mShoe.cutCardReached() && !mShoe.isEmpty())  // add check for cards remaining (small prob)
-//            for (int i = 0; i < iInitialCardsPerHand; i++) {
-//                dealUserCard();
-//                dealDealerCard();
-//            }
-//    }
+    // deal initial cards
+    public void deal() {
+        int iInitialCardsPerPlayer= 2;
+        if (mShoe.cutCardReached() || mShoe.isEmpty()) {
+            replaceShoe();
+            deal();
+        } else {
+            for (int i = 0; i < iInitialCardsPerPlayer; i++) {
+                dealCard(Player.USER);
+                dealCard(Player.DEALER);
+            }
+        }
+    }
+
+    public void dealerTurn() {
+        while (!dealerAtPointLimit()) {
+            dealCard(Player.DEALER);  // move to table for delayed action?
+        }
+    }
+
+    public void doubleDown() {
+        if (isValidBet(mUserBet)) {
+            increaseBet(mUserBet);
+            dealCard(Player.USER);
+            dealerTurn();
+        }
+    }
+
+    public void endHand() {
+        if (mSurrender)
+            surrenderBet();
+        else if (isPush())
+            returnBet();
+        else if (dealerWins())
+            collectBet();
+        else if (userWins())
+            payUser();
+
+        clearUserBet();
+        clearCurrentCards();
+    }
+
+    public void surrender() {
+        mSurrender = true;
+    }
 
     public void dealCard(Player player) {
         if (player == null)
@@ -83,10 +129,22 @@ public class Game {
     // check if dealer needs another card 
     public boolean dealerAtPointLimit() {
         boolean bOverLimit = mDealerPoints > DEALER_POINT_LIMIT;
-        boolean bHardSeventeen = (mDealerPoints == DEALER_POINT_LIMIT && !hasSoftSeventeen(mDealerCards));
+        boolean bHardSeventeen = (mDealerPoints == DEALER_POINT_LIMIT && !dealerHasSofSeventeen());
 
         // dealer is must have score of hard 17 or greater
         return bHardSeventeen || bOverLimit;
+    }
+
+    public boolean playerOnlyBlackJack() {
+        return playerHasBlackjack(Player.USER) && !playerHasBlackjack(Player.DEALER);
+    }
+
+    public boolean dealerOnlyBlackJack() {
+        return playerHasBlackjack(Player.DEALER) && !playerHasBlackjack(Player.USER);
+    }
+
+    public boolean bothPlayersBlackJack() {
+        return playerHasBlackjack(Player.USER) && playerHasBlackjack(Player.DEALER);
     }
 
     // check for blackjack -> player has 21 points and only 2 cards
@@ -111,16 +169,26 @@ public class Game {
         return (player == Player.USER) ? mUserPoints > TWENTY_ONE : mDealerPoints > TWENTY_ONE;
     }
 
-    // check if dealer has more points
-    public boolean dealerHasMorePoints() {
-        return mDealerPoints > mUserPoints;
+    // check if dealer wins -> user busts and dealer does not or dealer has more points
+    public boolean dealerWins() {
+        boolean bDealerUnderTwentyOneAndUserBust = !playerHasBust(Player.DEALER) && playerHasBust(Player.USER);
+        boolean bDealerHasMorePoints = !playerHasBust(Player.DEALER) && !playerHasBust(Player.USER) && mDealerPoints > mUserPoints;
+        return bDealerUnderTwentyOneAndUserBust || bDealerHasMorePoints;
     }
 
-    // check for tie -> both players under 21 with same score
+    // check if user wins -> dealer busts and user does not or user has more points
+    public boolean userWins() {
+        boolean bUserUnderTwentyOneAndDealerBust = !playerHasBust(Player.USER) && playerHasBust(Player.DEALER);
+        boolean bUserHasMorePoints = !playerHasBust(Player.USER) && !playerHasBust(Player.DEALER) && mUserPoints > mDealerPoints;
+        return bUserUnderTwentyOneAndDealerBust || bUserHasMorePoints;
+    }
+
+    // check for tie -> both players under 21 with same score or both players bust
     public boolean isPush() {
-        boolean bDealerAndUserUnderTwentyOne = (!playerHasTwentyOne(Player.DEALER) && !playerHasTwentyOne(Player.USER));
-        boolean bDealerAndUserSamePoints = (mDealerPoints == mUserPoints);
-        return bDealerAndUserUnderTwentyOne && bDealerAndUserSamePoints;
+        boolean bUnderTwentyOne = (!playerHasBust(Player.DEALER) && !playerHasBust(Player.USER));
+        boolean bSamePoints = (mDealerPoints == mUserPoints);
+        boolean bDealerAndUserBust = (playerHasBust(Player.DEALER) && playerHasBust(Player.USER));
+        return (bUnderTwentyOne && bSamePoints) || bDealerAndUserBust;
     }
 
     // pay user (for winning)
@@ -142,6 +210,7 @@ public class Game {
     public void surrenderBet() {
         int iSplitDivisor = 2;
         mUserMoney = mUserMoney - mUserBet / iSplitDivisor;
+        mSurrender = false;
     }
 
     // return the users bet
@@ -169,7 +238,6 @@ public class Game {
         ArrayList<Card> playerCards = (player == Player.USER) ? mUserCards : mDealerCards;
 
         // store number of cards & number of aces in hand
-        int iCardCount = playerCards.size();
         int iAceCount = getAceCount(player);
 
         // start point value at zero & define adjustment to make to ace values
@@ -177,8 +245,8 @@ public class Game {
         int iIncreaseToValue = 10;  // default ace = 1, need to add 10 if want to use 11 for ace value
 
         // add points for all cards in hand (default point value for Ace is 1)
-        for (int i = 0; i < iCardCount; i++)
-            iPoints += playerCards.get(i).getPointValue();
+        for (Card c : playerCards)
+            iPoints += c.getPointValue();
 
         // for all aces in hand, try to add 10 more points (try to use ace value 11 if it won't break 21 for total)
         for (int i = 0; i < iAceCount; i++)
@@ -192,6 +260,22 @@ public class Game {
             mDealerPoints = iPoints;
     }
 
+    public int getCurrentUserBet() {
+        return mUserBet;
+    }
+
+    public int getCurrentUserMoney() {
+        return mUserMoney;
+    }
+
+    public ArrayList<Card> getUserCards() {
+        return mUserCards;
+    }
+
+    public ArrayList<Card> getDealerCards() {
+        return mDealerCards;
+    }
+
     // get points for a player
     public int getPoints(Player player) {
         if (player == null)
@@ -200,7 +284,7 @@ public class Game {
     }
 
     // get number of cards in a players hand
-    private int countOfCardsInHand(Player player) {
+    public int countOfCardsInHand(Player player) {
         if (player == null)
             throw new IllegalArgumentException("player cannot be null");
         return (player == Player.USER) ? mUserCards.size() : mDealerCards.size();
@@ -226,18 +310,15 @@ public class Game {
     }
 
     // check if soft seventeen (point total 17 with at least one Ace counting for 11 points)
-    private boolean hasSoftSeventeen(ArrayList<Card> cards) {
+    private boolean dealerHasSofSeventeen() {
         // return false if dealer does not have 17 points
         if (mDealerPoints != DEALER_POINT_LIMIT)
             return false;
         else {
-            // store number of cards in dealer hand & start new sum of dealer point total at zero
-            int iCardsInDealerHand = cards.size();
-            int iDealerPoints = 0;
-
             // loop through cards in dealer hand and recalculate dealer points using only 1 for aces
-            for (int i = 0; i < iCardsInDealerHand; i++)
-                iDealerPoints += cards.get(i).getPointValue();
+            int iDealerPoints = 0;
+            for (Card c : mDealerCards)
+                iDealerPoints += c.getPointValue();
 
             // return true if sum of points using only 1 for aces does not match current dealer point total
             // any difference implies that dealer points is applying 11 for an ace, which means soft 17
