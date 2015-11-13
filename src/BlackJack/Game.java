@@ -25,6 +25,7 @@ public class Game {
     private int mUserMoney;  // stored as cents
     private int mUserBet;  // stored as cents
     private boolean mSurrender;
+    private Card mDealtCard; // stores last card that was dealt
 
 
     // constructor
@@ -37,6 +38,7 @@ public class Game {
         mUserMoney = USER_STARTING_MONEY;  // set starting money for user
         mUserBet = 0;  // user bet starts at 0
         mSurrender = false;
+        mDealtCard = null;
     }
 
     // get a new shoe of playing cards 
@@ -114,15 +116,19 @@ public class Game {
         mSurrender = true;
     }
 
+    public Card getLastDealtCard() {
+        return mDealtCard;
+    }
+
     public void dealCard(Player player) {
         if (player == null)
             throw new IllegalArgumentException("player cannot be null");
 
-        Card nextCard = mShoe.playCard();
+        mDealtCard = mShoe.playCard();
         if (player == Player.USER)
-            mUserCards.add(nextCard);
+            mUserCards.add(mDealtCard);
         else
-            mDealerCards.add(nextCard);
+            mDealerCards.add(mDealtCard);
         updatePlayerPoints(player);
     }
 
