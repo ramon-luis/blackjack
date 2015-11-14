@@ -13,8 +13,8 @@ public class Shoe {
 
     // constants for number of decks in shoe and relative position of cut card
     public static final int MAX_CARD_DECKS_IN_SHOE = 6;
-    public static final int MIN_PERCENT_FOR_CUT_CARD = 5;
-    public static final int MAX_PERCENT_FOR_CUT_CARD = 25;
+    public static final int MIN_PERCENT_FOR_CUT_CARD = 90;
+    public static final int MAX_PERCENT_FOR_CUT_CARD = 95;
 
     // private instance variables
     private ArrayList<Card> mCardsInShoe;

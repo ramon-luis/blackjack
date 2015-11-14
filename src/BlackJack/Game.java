@@ -41,6 +41,10 @@ public class Game {
         mDealtCard = null;
     }
 
+    private void clearUserPoints() {
+        mUserPoints = 0;
+    }
+
     // get a new shoe of playing cards 
     public void replaceShoe() {
         mShoe = new Shoe();
@@ -48,7 +52,7 @@ public class Game {
 
     // check if bet amount is valid -> needs to be more than min bet and less than users available money
     public boolean isValidBet(int amount) {
-        return amount > 0 && amount < mUserMoney;
+        return amount > 0 && amount <= mUserMoney;
 
     }
 
@@ -70,18 +74,26 @@ public class Game {
         mUserBet = 0;
     }
 
-    // deal initial cards
-    public void deal() {
-        int iInitialCardsPerPlayer= 2;
-        if (mShoe.cutCardReached() || mShoe.isEmpty()) {
-            replaceShoe();
-            deal();
-        } else {
-            for (int i = 0; i < iInitialCardsPerPlayer; i++) {
-                dealCard(Player.USER);
-                dealCard(Player.DEALER);
-            }
-        }
+//    // deal initial cards
+//    public void deal() {
+//        int iInitialCardsPerPlayer= 2;
+//        if (mShoe.cutCardReached() || mShoe.isEmpty()) {
+//            replaceShoe();
+//            deal();
+//        } else {
+//            for (int i = 0; i < iInitialCardsPerPlayer; i++) {
+//                dealCard(Player.USER);
+//                dealCard(Player.DEALER);
+//            }
+//        }
+//    }
+
+    public boolean outOfCards() {
+        return mShoe.isEmpty();
+    }
+
+    public boolean cutCardReached() {
+        return mShoe.cutCardReached();
     }
 
     public void dealerTurn() {
@@ -103,13 +115,14 @@ public class Game {
             surrenderBet();
         else if (isPush())
             returnBet();
-        else if (dealerWins())
-            collectBet();
+        // else if (dealerWins())
+          //  collectBet();
         else if (userWins())
             payUser();
 
         clearUserBet();
         clearCurrentCards();
+        clearUserPoints();
     }
 
     public void surrender() {
@@ -118,6 +131,10 @@ public class Game {
 
     public Card getLastDealtCard() {
         return mDealtCard;
+    }
+
+    public boolean userIsOutOfMoney() {
+        return mUserMoney <= 0;
     }
 
     public void dealCard(Player player) {
@@ -130,6 +147,7 @@ public class Game {
         else
             mDealerCards.add(mDealtCard);
         updatePlayerPoints(player);
+        System.out.println(mDealtCard);
     }
 
     // check if dealer needs another card 
@@ -204,7 +222,7 @@ public class Game {
         int iBJDen = 2;
         if (playerHasBlackjack(Player.USER))
             iUserPayment = iUserPayment * iBJNum / iBJDen;
-        mUserMoney += iUserPayment;
+        mUserMoney += mUserBet + iUserPayment;
     }
 
     // take users bet (for losing)
@@ -215,7 +233,7 @@ public class Game {
     // split the users bet between user and dealer (surrender)
     public void surrenderBet() {
         int iSplitDivisor = 2;
-        mUserMoney = mUserMoney - mUserBet / iSplitDivisor;
+        mUserMoney = mUserMoney + mUserBet / iSplitDivisor;
         mSurrender = false;
     }
 
