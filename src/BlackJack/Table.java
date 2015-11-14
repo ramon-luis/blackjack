@@ -19,8 +19,7 @@ import java.util.Timer;
 
 
 // TO DO LIST:
-
-    // add timer delay for all cards - UPDATE OR REMOVE?
+    
     // refactor code -> clean up and simplify
     // disable buttons instead of hiding them - MAYBE?
 
@@ -31,8 +30,7 @@ public class Table extends JFrame {
     
     // constants
     public static final int PADDING = 5;  // margin padding
-    public static final int PACE = 250;
-    public static final int DELAY = PACE * 2;  // delay for dealing cards in milliseconds
+    public static final int DELAY = 250;  // delay for dealer cards in milliseconds
     
     // private member: Game object
     private Game mGame;  // game object
@@ -477,9 +475,15 @@ public class Table extends JFrame {
     private void dealerTurn() {
         if (!mGame.dealerAtPointLimit()) {
             delayedCard(Player.DEALER);
+        } else {
             displayHandOutcome();
+            revealDealerCards();
+            updateDealerPointsLabel();
             showNextHand();
         }
+
+
+
     }
     
     // double down -> user doubles bet and only takes 1 more card, then stay (dealers turn)
@@ -600,6 +604,8 @@ public class Table extends JFrame {
                         dealerTurn();
                     else {
                         displayHandOutcome();
+                        revealDealerCards();
+                        updateDealerPointsLabel();
                         showNextHand();
                     }
                 }

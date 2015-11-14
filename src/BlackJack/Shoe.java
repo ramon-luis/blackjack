@@ -13,8 +13,8 @@ public class Shoe {
 
     // constants for number of decks in shoe and relative position of cut card
     public static final int MAX_CARD_DECKS_IN_SHOE = 6;
-    public static final int MIN_PERCENT_FOR_CUT_CARD = 90;
-    public static final int MAX_PERCENT_FOR_CUT_CARD = 95;
+    public static final int MIN_PERCENT_FOR_CUT_CARD = 10; // at least ~30 cards
+    public static final int MAX_PERCENT_FOR_CUT_CARD = 20;  // at most ~60 cards
 
     // private instance variables
     private ArrayList<Card> mCardsInShoe;
@@ -33,6 +33,8 @@ public class Shoe {
     public void shuffle() {
         Collections.shuffle(mCardsInShoe);
     }
+
+
 
     // plays the next ("top") card in the shoe
     public Card playCard() {

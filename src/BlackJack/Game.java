@@ -45,6 +45,10 @@ public class Game {
         mUserPoints = 0;
     }
 
+    public boolean initialDealIsComplete() {
+        return countOfCardsInHand(Player.DEALER) >= 2 && countOfCardsInHand(Player.USER) >= 2;
+    }
+
     // get a new shoe of playing cards 
     public void replaceShoe() {
         mShoe = new Shoe();
