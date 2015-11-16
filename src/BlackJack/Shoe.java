@@ -6,51 +6,39 @@ import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * creates a shoe object that is filled with playing card decks
- * shoe object can be used in blackjack game to acccess cards
+ * shoe object can be used in blackjack game to access cards
  */
 
 public class Shoe {
 
     // constants for number of decks in shoe and relative position of cut card
     public static final int MAX_CARD_DECKS_IN_SHOE = 6;
-    public static final int MIN_PERCENT_FOR_CUT_CARD = 10; // at least ~30 cards
-    public static final int MAX_PERCENT_FOR_CUT_CARD = 20;  // at most ~60 cards
+    public static final int MIN_PERCENT_FOR_CUT_CARD = 10; // at least ~30 cards remaining after cut card
+    public static final int MAX_PERCENT_FOR_CUT_CARD = 20;  // at most ~60 cards remaining after cut card
 
     // private instance variables
-    private ArrayList<Card> mCardsInShoe;
-    private int mCutCardPosition;
+    private ArrayList<Card> mCardsInShoe;  // list of all cards in shoe
+    private int mCutCardPosition;  // int location is measured from end of deck/list
 
     // constructor
     public Shoe() {
         // ORDER MATTERS!
         mCardsInShoe = new ArrayList<>();  // create an empty list to store the cards in the shoe
         fillShoe();  // add decks of cards to the shoe
-        shuffle();  // shuffle the shoe;
+        shuffle();  // shuffle all cards in the shoe;
         mCutCardPosition = getCutCardPosition();  // place cut card in shuffled shoe
     }
-
-    // place the cards in the shoe in random order
-    public void shuffle() {
-        Collections.shuffle(mCardsInShoe);
-    }
-
-
 
     // plays the next ("top") card in the shoe
     public Card playCard() {
         Card topCard = getTopCard();  // store the top card before it's removed from the deck
         removeTopCard();  // remove the top card from the deck
-        return topCard;  // return the card that was previously the top card in the deck
+        return topCard;  // return the card that was just removed (the top card)
     }
 
-    // check if the cut card has been reached in the shoe (if more cards than cut position, then card has not been reached yet)
+    // check if the cut card has been reached in the shoe
     public boolean cutCardReached() {
         return countOfRemainingCards() < mCutCardPosition;
-    }
-
-    // check if all cards gone from shoe
-    public boolean isEmpty() {
-        return countOfRemainingCards() == 0;
     }
 
     // toString
@@ -65,7 +53,6 @@ public class Shoe {
         return sCards;
     }
 
-    
     //**********************
     // HELPER METHODS BELOW
     //**********************
@@ -79,6 +66,11 @@ public class Shoe {
         for (int i = 0; i < MAX_CARD_DECKS_IN_SHOE; i++)
             for (Card c : deck.getCards())
                 mCardsInShoe.add(c);
+    }
+
+    // place the cards in the shoe in random order
+    private void shuffle() {
+        Collections.shuffle(mCardsInShoe);
     }
 
     // returns the top (first) card in the shoe
@@ -99,9 +91,9 @@ public class Shoe {
     // generate the cut card (random mark in deck to determine when shoe is replaced)
     private int getCutCardPosition() {
         // http://stackoverflow.com/questions/363681/generating-random-integers-in-a-range-with-java
-        int iMinPosition = countOfRemainingCards() * MIN_PERCENT_FOR_CUT_CARD / 100;  // min position is max percent in shoe
-        int iMaxPosition = countOfRemainingCards() * MAX_PERCENT_FOR_CUT_CARD / 100;  // max position is min percent in shoe
-        return ThreadLocalRandom.current().nextInt(iMinPosition, iMaxPosition + 1);  // int is measured from end of deck
+        int iMinPosition = countOfRemainingCards() * MIN_PERCENT_FOR_CUT_CARD / 100;
+        int iMaxPosition = countOfRemainingCards() * MAX_PERCENT_FOR_CUT_CARD / 100;
+        return ThreadLocalRandom.current().nextInt(iMinPosition, iMaxPosition + 1);
     }
 
 }

@@ -2,6 +2,10 @@ package BlackJack;
 
 import javax.swing.*;
 
+/**
+ * contains main method to run a BlackJack game object
+ */
+
 public class GameDriver {
 
     public static void main(String[] args) {
@@ -15,9 +19,5 @@ public class GameDriver {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(GAME_FRAME_WIDTH, GAME_FRAME_HEIGHT);
         frame.setVisible(true);
-
-
     }
-
-
 }
